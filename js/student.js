@@ -360,6 +360,30 @@ timer = setTimeout(() => {
 document.addEventListener("DOMContentLoaded", () => {
   $("quizTitle").textContent = QUIZ.title;
 
+  const nameInput = $("studentName");
+
+  function nameIsValid() {
+    return nameInput.value.trim().length > 0;
+  }
+
+  function updateNameRequirement() {
+    const valid = nameIsValid();
+
+    // Disable navigation if name empty
+    $("nextBtn").disabled = !valid;
+    $("submitBtn").disabled = !valid;
+
+    // Optional visual cue
+    if (!valid) {
+      nameInput.style.borderColor = "rgba(255,77,77,0.6)";
+    } else {
+      nameInput.style.borderColor = "";
+    }
+  }
+
+  // Watch for typing
+  nameInput.addEventListener("input", updateNameRequirement);
+
   $("backBtn").addEventListener("click", prevQuestion);
   $("nextBtn").addEventListener("click", nextQuestion);
   $("submitBtn").addEventListener("click", showSummary);
@@ -367,5 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   enableAdminLongPress();
 
+  updateNameRequirement();
   renderCurrentQuestion();
 });
