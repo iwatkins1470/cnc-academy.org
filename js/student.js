@@ -22,6 +22,7 @@ const QUIZ = {
 // ============================================
 const STORAGE_KEY = "cnc_academy_attempts_v1";
 let currentIndex = 0;
+let navLockUntil = 0;
 
 // answers[qid] = chosenIndex (number) or null
 const answers = Object.fromEntries(QUIZ.questions.map(q => [q.id, null]));
@@ -462,6 +463,7 @@ function nextQuestion() {
     if (reviewPos < reviewQueue.length - 1) {
       reviewPos++;
       currentIndex = reviewQueue[reviewPos];
+      navLockUntil = Date.now() + 250;
       renderCurrentQuestion();
     }
     return;
@@ -469,6 +471,7 @@ function nextQuestion() {
 
   if (currentIndex < QUIZ.questions.length - 1) {
     currentIndex++;
+    navLockUntil = Date.now() + 250;
     renderCurrentQuestion();
   }
 }
@@ -480,6 +483,7 @@ function prevQuestion() {
     if (reviewPos > 0) {
       reviewPos--;
       currentIndex = reviewQueue[reviewPos];
+      navLockUntil = Date.now() + 250;
       renderCurrentQuestion();
     }
     return;
@@ -487,6 +491,7 @@ function prevQuestion() {
 
   if (currentIndex > 0) {
     currentIndex--;
+    navLockUntil = Date.now() + 250;
     renderCurrentQuestion();
   }
 }
