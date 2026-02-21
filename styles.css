@@ -1,13 +1,14 @@
 :root {
   --bg: #0b0d10;
   --panel: #11151b;
-  --panel-2: #0f1318;
+  --panel2: #0f1318;
   --text: #e8eef5;
   --muted: #a8b3c2;
   --border: rgba(255, 255, 255, 0.10);
 
-  --accent: #ff8a00;      /* orange */
-  --accent-2: #ffb15c;    /* lighter orange */
+  --accent: #ff8a00;
+  --accent2: #ffb15c;
+
   --good: #2ecc71;
   --bad: #ff4d4d;
   --warn: #ffb000;
@@ -16,9 +17,9 @@
   --radius: 14px;
 }
 
-/* Page base */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -30,55 +31,87 @@ body {
   line-height: 1.45;
 }
 
-/* Header */
 header {
   padding: 28px 16px 18px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(255,138,0,0.08), transparent 70%);
 }
+header h1 { margin: 0; font-size: 1.8rem; letter-spacing: 0.4px; }
+header p { margin: 6px 0 0; color: var(--muted); }
 
-header h1 {
-  margin: 0;
-  font-size: 1.8rem;
-  letter-spacing: 0.4px;
-}
-
-header p {
-  margin: 6px 0 0;
-  color: var(--muted);
-}
-
-/* Layout container */
 .container {
   max-width: 980px;
   margin: 22px auto 40px;
   padding: 0 16px;
+  display: grid;
+  gap: 16px;
 }
 
-/* Title */
-#quizTitle {
-  margin: 18px 0 14px;
-  font-size: 1.35rem;
-  color: var(--text);
-}
-
-/* Quiz “cards” */
-.question {
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 55%),
-              var(--panel);
+.panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 55%), var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px 16px 12px;
-  margin: 14px 0;
+  padding: 16px;
   box-shadow: var(--shadow);
 }
 
-.question p {
-  margin: 0 0 10px;
-  font-size: 1.02rem;
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.panelHead h2 { margin: 0; font-size: 1.35rem; }
+
+.meta { display: flex; gap: 10px; align-items: center; }
+
+.pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,138,0,0.35);
+  background: rgba(255,138,0,0.10);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
-/* Choices */
+.studentRow {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0 14px;
+}
+.studentLabel { color: var(--muted); font-weight: 700; }
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  outline: none;
+}
+.input:focus {
+  border-color: rgba(255,138,0,0.65);
+  box-shadow: 0 0 0 3px rgba(255,138,0,0.15);
+}
+
+/* Question stage */
+#questionStage { margin-top: 8px; }
+
+.qCard {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 14px 10px;
+}
+
+.qText { margin: 0 0 10px; font-size: 1.05rem; }
+
 .choice {
   display: flex;
   align-items: center;
@@ -91,36 +124,27 @@ header p {
   cursor: pointer;
   transition: transform 0.06s ease, border-color 0.15s ease, background 0.15s ease;
 }
-
 .choice:hover {
   border-color: rgba(255,138,0,0.35);
   background: rgba(255,138,0,0.06);
 }
-
 .choice:active { transform: translateY(1px); }
+.choice input[type="radio"] { transform: scale(1.15); accent-color: var(--accent); }
 
-/* Make radio a bit nicer without heavy custom hacks */
-.choice input[type="radio"] {
-  transform: scale(1.15);
-  accent-color: var(--accent);
-}
-
-/* Feedback */
 .feedback {
   margin-top: 10px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--muted);
 }
 
-/* Action buttons row */
-.actions {
-  margin: 16px 0 10px;
+/* Nav row */
+.navRow {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  margin-top: 12px;
 }
 
-/* Buttons */
 button {
   appearance: none;
   border: 1px solid rgba(255,138,0,0.45);
@@ -129,50 +153,85 @@ button {
   padding: 10px 14px;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.2px;
-  transition: transform 0.06s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: transform 0.06s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
 }
-
 button:hover {
   border-color: rgba(255,138,0,0.75);
   background: linear-gradient(180deg, rgba(255,138,0,0.30), rgba(255,138,0,0.12));
 }
-
 button:active { transform: translateY(1px); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
 
-/* Result bar */
+button.ghost {
+  border-color: rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.04);
+}
+button.danger {
+  border-color: rgba(255,77,77,0.50);
+  background: rgba(255,77,77,0.10);
+}
+
+/* Result */
 .result {
   margin-top: 14px;
   padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
+  background: rgba(0,0,0,0.20);
   box-shadow: var(--shadow);
 }
+.result .big { font-size: 1.15rem; font-weight: 900; }
+.result .sub { color: var(--muted); margin-top: 6px; }
+.result .rating { margin-top: 8px; font-weight: 900; }
+.result .rating.good { color: var(--good); }
+.result .rating.warn { color: var(--warn); }
+.result .rating.bad  { color: var(--bad); }
 
-/* Status styling from script.js classes */
-.question.correct {
-  border-color: rgba(46, 204, 113, 0.55);
-  box-shadow: 0 10px 30px rgba(46,204,113,0.10), var(--shadow);
+/* Dashboard */
+.dashRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 6px 0 12px;
 }
-.question.correct .feedback { color: rgba(46, 204, 113, 0.95); }
+.hint { color: var(--muted); }
 
-.question.incorrect {
-  border-color: rgba(255, 77, 77, 0.55);
-  box-shadow: 0 10px 30px rgba(255,77,77,0.10), var(--shadow);
+.tableWrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
 }
-.question.incorrect .feedback { color: rgba(255, 77, 77, 0.95); }
 
-.question.unanswered {
-  border-color: rgba(255, 176, 0, 0.60);
-  box-shadow: 0 10px 30px rgba(255,176,0,0.10), var(--shadow);
+.dashTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
 }
-.question.unanswered .feedback { color: rgba(255, 176, 0, 0.95); }
+.dashTable th, .dashTable td {
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-align: left;
+  white-space: nowrap;
+}
+.dashTable th { color: var(--muted); font-weight: 900; }
+.dashTable tr:last-child td { border-bottom: none; }
 
-/* Small screens */
-@media (max-width: 520px) {
-  header h1 { font-size: 1.55rem; }
-  .choice { padding: 10px 8px; }
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+}
+.tag.good { border-color: rgba(46,204,113,0.45); color: rgba(46,204,113,0.95); }
+.tag.warn { border-color: rgba(255,176,0,0.55); color: rgba(255,176,0,0.95); }
+.tag.bad  { border-color: rgba(255,77,77,0.55); color: rgba(255,77,77,0.95); }
+
+@media (max-width: 600px) {
+  .studentRow { grid-template-columns: 1fr; }
 }
