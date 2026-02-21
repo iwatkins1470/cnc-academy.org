@@ -234,4 +234,11 @@ button.danger {
 
 @media (max-width: 600px) {
   .studentRow { grid-template-columns: 1fr; }
+.reviewBtn {
+  margin-top: 10px;
+  border-color: rgba(255,176,0,0.60);
+  background: rgba(255,176,0,0.15);
+}
+.reviewBtn:hover {
+  background: rgba(255,176,0,0.25);
 }
