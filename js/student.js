@@ -150,6 +150,14 @@ function renderCurrentQuestion() {
     const label = document.createElement("label");
     label.className = "choice";
 
+    // iPhone Safari ghost-tap guard: block a leftover tap right after Next/Back
+    label.addEventListener("click", (e) => {
+      if (Date.now() < navLockUntil) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
     const input = document.createElement("input");
     input.type = "radio";
     input.name = q.id;
@@ -159,6 +167,9 @@ function renderCurrentQuestion() {
     if (answers[q.id] === idx) input.checked = true;
 
     input.addEventListener("change", () => {
+      // Ghost-tap guard: ignore any selection immediately after navigation
+      if (Date.now() < navLockUntil) return;
+
       // Hard lock: ignore if name isn't valid
       if (!nameIsValid()) return;
 
