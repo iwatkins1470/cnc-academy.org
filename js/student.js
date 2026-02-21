@@ -500,15 +500,22 @@ function bindTap(id, handler) {
   const el = $(id);
   if (!el) return;
 
-  // Normal desktop click
-  el.addEventListener("click", handler);
+  let justHandledTouch = false;
 
-  // iPhone Safari: make taps reliable
   el.addEventListener("touchend", (e) => {
+    justHandledTouch = true;
     e.preventDefault();
     e.stopPropagation();
     handler(e);
+
+    // Reset shortly after so normal clicks work (desktop)
+    setTimeout(() => { justHandledTouch = false; }, 400);
   }, { passive: false });
+
+  el.addEventListener("click", (e) => {
+    if (justHandledTouch) return;
+    handler(e);
+  });
 }
 
 bindTap("backBtn", prevQuestion);
