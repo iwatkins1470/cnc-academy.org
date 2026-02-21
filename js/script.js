@@ -307,3 +307,14 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCurrentQuestion();
   renderDashboard();
 });
+function reviewMissed(missedList) {
+  if (!missedList || !missedList.length) return;
+
+  // Jump to first missed question
+  currentIndex = missedList[0] - 1;
+
+  // Clear summary
+  $("result").innerHTML = "";
+
+  renderCurrentQuestion();
+}
