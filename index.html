@@ -46,5 +46,17 @@
 </div>
 
 <script src="script.js"></script>
+<script>
+function submitQuiz() {
+  const correct = { q1: "0", q2: "1", q3: "1" };
+  let score = 0, total = Object.keys(correct).length;
+
+  for (const q in correct) {
+    const picked = document.querySelector(`input[name="${q}"]:checked`)?.value;
+    if (picked === correct[q]) score++;
+  }
+  document.getElementById("result").textContent = `Score: ${score}/${total}`;
+}
+</script>
 </body>
 </html>
