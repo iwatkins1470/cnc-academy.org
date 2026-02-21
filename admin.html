@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CNC Academy - Instructor Dashboard</title>
+  <link rel="stylesheet" href="styles.css?v=5" />
+</head>
+<body>
+
+<header>
+  <h1>CNC Academy</h1>
+  <p>Instructor Dashboard</p>
+</header>
+
+<div class="container">
+
+  <section class="panel">
+    <div class="panelHead">
+      <h2>Instructor Dashboard</h2>
+      <div class="meta">
+        <span class="pill" id="attemptCountPill">0 attempts</span>
+      </div>
+    </div>
+
+    <div class="dashRow">
+      <button type="button" id="exportBtn">Copy Results</button>
+      <button type="button" id="clearBtn" class="danger">Clear Results</button>
+      <span class="hint">Saved locally on this device/browser.</span>
+    </div>
+
+    <div class="tableWrap">
+      <table class="dashTable">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Student</th>
+            <th>Score</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody id="dashBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
