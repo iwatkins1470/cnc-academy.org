@@ -251,7 +251,6 @@ function playPerfectFireworks() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const particles = [];
-  const bursts = 4;
   const colors = ["#ff8a00", "#ffb15c", "#e8eef5", "#ffb000"];
 
   function burst(x, y) {
@@ -271,24 +270,49 @@ function playPerfectFireworks() {
     }
   }
 
-  ctx.clearRect(0, 0, w, h);
+  // ---- run-until-click state ----
+  let running = true;
+  let frame = 0;
+  let burstTimer = null;
 
-  for (let b = 0; b < bursts; b++) {
-    setTimeout(() => {
-      burst(
-        w * (0.2 + Math.random() * 0.6),
-        h * (0.18 + Math.random() * 0.45)
-      );
-      try { navigator.vibrate && navigator.vibrate(20); } catch {}
-    }, b * 180);
+  function stopAll() {
+    running = false;
+
+    if (burstTimer) {
+      clearInterval(burstTimer);
+      burstTimer = null;
+    }
+
+    ctx.clearRect(0, 0, w, h);
+    canvas.style.display = "none";
+
+    // remove listeners
+    window.removeEventListener("pointerdown", stopAll, true);
+    window.removeEventListener("touchstart", stopAll, true);
+    window.removeEventListener("mousedown", stopAll, true);
   }
 
-  let frame = 0;
+  // Stop on any interaction anywhere
+  window.addEventListener("pointerdown", stopAll, true);
+  window.addEventListener("touchstart", stopAll, true);
+  window.addEventListener("mousedown", stopAll, true);
+
+  // Spawn bursts repeatedly until stopped
+  burstTimer = setInterval(() => {
+    burst(
+      w * (0.15 + Math.random() * 0.70),
+      h * (0.15 + Math.random() * 0.50)
+    );
+    try { navigator.vibrate && navigator.vibrate(15); } catch {}
+  }, 260);
+
+  ctx.clearRect(0, 0, w, h);
 
   function step() {
+    if (!running) return;
     frame++;
 
-    // trails (brighter for iPhone)
+    // trails
     ctx.fillStyle = "rgba(0,0,0,0.10)";
     ctx.fillRect(0, 0, w, h);
 
@@ -321,12 +345,6 @@ function playPerfectFireworks() {
 
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
-
-    if (particles.length === 0 || frame > 240) {
-      ctx.clearRect(0, 0, w, h);
-      canvas.style.display = "none";
-      return;
-    }
 
     requestAnimationFrame(step);
   }
