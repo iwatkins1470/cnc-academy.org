@@ -473,10 +473,25 @@ function updateNameRequirement() {
   // Watch for typing
   nameInput.addEventListener("input", updateNameRequirement);
 
-  $("backBtn").addEventListener("click", prevQuestion);
-  $("nextBtn").addEventListener("click", nextQuestion);
-  $("submitBtn").addEventListener("click", showSummary);
-  $("resetBtn").addEventListener("click", resetAll);
+function bindTap(id, handler) {
+  const el = $(id);
+  if (!el) return;
+
+  // Normal desktop click
+  el.addEventListener("click", handler);
+
+  // iPhone Safari: make taps reliable
+  el.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handler(e);
+  }, { passive: false });
+}
+
+bindTap("backBtn", prevQuestion);
+bindTap("nextBtn", nextQuestion);
+bindTap("submitBtn", showSummary);
+bindTap("resetBtn", resetAll);
 
   enableAdminLongPress();
 
