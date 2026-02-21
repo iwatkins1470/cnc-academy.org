@@ -1,43 +1,178 @@
-body { font-family: Arial, sans-serif; margin: 0; line-height: 1.4; }
-header { padding: 20px; border-bottom: 1px solid #ddd; }
-.container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
-.question { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 16px 0; }
-button { padding: 10px 14px; border-radius: 10px; border: 1px solid #222; background: #fff; cursor: pointer; }
-.result { margin-top: 16px; font-weight: bold; }
-.actions { margin: 12px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+:root {
+  --bg: #0b0d10;
+  --panel: #11151b;
+  --panel-2: #0f1318;
+  --text: #e8eef5;
+  --muted: #a8b3c2;
+  --border: rgba(255, 255, 255, 0.10);
 
-.choice { display: block; margin: 8px 0; }
+  --accent: #ff8a00;      /* orange */
+  --accent-2: #ffb15c;    /* lighter orange */
+  --good: #2ecc71;
+  --bad: #ff4d4d;
+  --warn: #ffb000;
 
-.feedback { margin-top: 10px; font-weight: bold; }
+  --shadow: 0 10px 30px rgba(0,0,0,0.45);
+  --radius: 14px;
+}
 
-.question.correct { border-color: #2e7d32; }
-.question.incorrect { border-color: #c62828; }
-.question.unanswered { border-color: #ef6c00; }
+/* Page base */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 500px at 20% -10%, rgba(255, 138, 0, 0.18), transparent 60%),
+    radial-gradient(900px 400px at 110% 10%, rgba(255, 138, 0, 0.10), transparent 55%),
+    linear-gradient(180deg, var(--bg), #07080a);
+  line-height: 1.45;
+}
+
+/* Header */
+header {
+  padding: 28px 16px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,138,0,0.08), transparent 70%);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: 0.4px;
+}
+
+header p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+/* Layout container */
+.container {
+  max-width: 980px;
+  margin: 22px auto 40px;
+  padding: 0 16px;
+}
+
+/* Title */
+#quizTitle {
+  margin: 18px 0 14px;
+  font-size: 1.35rem;
+  color: var(--text);
+}
+
+/* Quiz “cards” */
+.question {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 55%),
+              var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 16px 12px;
+  margin: 14px 0;
+  box-shadow: var(--shadow);
+}
+
+.question p {
+  margin: 0 0 10px;
+  font-size: 1.02rem;
+}
+
+/* Choices */
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  margin: 8px 0;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: transform 0.06s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.choice:hover {
+  border-color: rgba(255,138,0,0.35);
+  background: rgba(255,138,0,0.06);
+}
+
+.choice:active { transform: translateY(1px); }
+
+/* Make radio a bit nicer without heavy custom hacks */
+.choice input[type="radio"] {
+  transform: scale(1.15);
+  accent-color: var(--accent);
+}
+
+/* Feedback */
+.feedback {
+  margin-top: 10px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* Action buttons row */
 .actions {
-  margin: 12px 0;
+  margin: 16px 0 10px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.choice {
-  display: block;
-  margin: 6px 0;
+/* Buttons */
+button {
+  appearance: none;
+  border: 1px solid rgba(255,138,0,0.45);
+  background: linear-gradient(180deg, rgba(255,138,0,0.22), rgba(255,138,0,0.10));
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: transform 0.06s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
-.feedback {
-  margin-top: 8px;
-  font-weight: bold;
+button:hover {
+  border-color: rgba(255,138,0,0.75);
+  background: linear-gradient(180deg, rgba(255,138,0,0.30), rgba(255,138,0,0.12));
 }
 
+button:active { transform: translateY(1px); }
+
+/* Result bar */
+.result {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+/* Status styling from script.js classes */
 .question.correct {
-  border-color: #2e7d32;
+  border-color: rgba(46, 204, 113, 0.55);
+  box-shadow: 0 10px 30px rgba(46,204,113,0.10), var(--shadow);
 }
+.question.correct .feedback { color: rgba(46, 204, 113, 0.95); }
 
 .question.incorrect {
-  border-color: #c62828;
+  border-color: rgba(255, 77, 77, 0.55);
+  box-shadow: 0 10px 30px rgba(255,77,77,0.10), var(--shadow);
 }
+.question.incorrect .feedback { color: rgba(255, 77, 77, 0.95); }
 
 .question.unanswered {
-  border-color: #ef6c00;
+  border-color: rgba(255, 176, 0, 0.60);
+  box-shadow: 0 10px 30px rgba(255,176,0,0.10), var(--shadow);
+}
+.question.unanswered .feedback { color: rgba(255, 176, 0, 0.95); }
+
+/* Small screens */
+@media (max-width: 520px) {
+  header h1 { font-size: 1.55rem; }
+  .choice { padding: 10px 8px; }
 }
