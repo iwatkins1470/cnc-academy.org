@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CNC Academy - Quiz</title>
-  <link rel="stylesheet" href="styles.css?v=2" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
 
@@ -14,16 +14,63 @@
 </header>
 
 <div class="container">
-  <h2 id="quizTitle">Quiz</h2>
 
-  <form id="quizForm"></form>
+  <!-- Student Panel -->
+  <section class="panel">
+    <div class="panelHead">
+      <h2 id="quizTitle">Quiz</h2>
+      <div class="meta">
+        <span id="progressPill" class="pill">Question 1/1</span>
+      </div>
+    </div>
 
-  <div class="actions">
-    <button type="button" id="submitBtn">Submit Quiz</button>
-    <button type="button" id="resetBtn">Reset</button>
-  </div>
+    <div class="studentRow">
+      <label class="studentLabel" for="studentName">Student (optional)</label>
+      <input id="studentName" class="input" type="text" placeholder="Type name for score tracking" />
+    </div>
 
-  <div id="result" class="result"></div>
+    <div id="questionStage"></div>
+
+    <div class="navRow">
+      <button type="button" id="backBtn">Back</button>
+      <button type="button" id="nextBtn">Next</button>
+      <button type="button" id="submitBtn">Submit</button>
+      <button type="button" id="resetBtn" class="ghost">Reset</button>
+    </div>
+
+    <div id="result" class="result"></div>
+  </section>
+
+  <!-- Instructor Dashboard -->
+  <section class="panel">
+    <div class="panelHead">
+      <h2>Instructor Dashboard</h2>
+      <div class="meta">
+        <span class="pill" id="attemptCountPill">0 attempts</span>
+      </div>
+    </div>
+
+    <div class="dashRow">
+      <button type="button" id="exportBtn">Copy Results</button>
+      <button type="button" id="clearBtn" class="danger">Clear Results</button>
+      <span class="hint">Saved locally on this device/browser.</span>
+    </div>
+
+    <div class="tableWrap">
+      <table class="dashTable">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Student</th>
+            <th>Score</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody id="dashBody"></tbody>
+      </table>
+    </div>
+  </section>
+
 </div>
 
 <script src="js/script.js"></script>
