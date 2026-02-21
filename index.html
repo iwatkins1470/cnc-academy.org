@@ -4,24 +4,66 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CNC Academy - Quiz</title>
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=7" />
 </head>
 <body>
 
 <header>
-  <h1>CNC Academy</h1>
-  <p>Training Review Quiz</p>
+  <div class="brand">
+    <div class="brandLeft">
+      <!-- Flat minimal tool icon -->
+      <div class="logoMark" aria-hidden="true">
+        <svg class="toolsIcon" viewBox="0 0 120 120">
+          <!-- RULE -->
+          <path class="rule" d="M14 78 L86 50 L94 66 L22 94 Z"></path>
+          <path class="tick" d="M30 85 L34 83"></path>
+          <path class="tick" d="M38 81 L42 79"></path>
+          <path class="tick" d="M46 77 L50 75"></path>
+          <path class="tick" d="M54 73 L58 71"></path>
+          <path class="tick" d="M62 69 L66 67"></path>
+          <path class="tick" d="M70 65 L74 63"></path>
+
+          <!-- SCREWDRIVER -->
+          <path class="driver" d="M74 18 L90 34 L82 42 L66 26 Z"></path>
+          <path class="driver" d="M62 28 L80 46 L52 74 L34 56 Z"></path>
+          <path class="metal" d="M50 70 L58 78 L44 92 L36 84 Z"></path>
+
+          <!-- WRENCH -->
+          <path class="wrench" d="M16 24
+                                 C26 16 38 18 44 26
+                                 L36 34
+                                 L56 54
+                                 L44 66
+                                 L24 46
+                                 L16 54
+                                 C8 48 6 34 16 24 Z"></path>
+          <circle class="hole" cx="50" cy="60" r="6"></circle>
+        </svg>
+      </div>
+
+      <!-- Hybrid logo text -->
+      <div class="brandText">
+        <div class="brandName">
+          <span class="logoCNC">CNC</span>
+          <span class="logoAcademy">
+            ACADEM<span id="adminTrigger" class="logoY" aria-label="Instructor access">Y</span>
+          </span>
+        </div>
+        <div class="brandTag">Training Review Quiz</div>
+      </div>
+    </div>
+
+    <div class="brandRight">
+      <span class="pill" id="progressPill">Question 1/1</span>
+    </div>
+  </div>
 </header>
 
 <div class="container">
-
-  <!-- Student Panel -->
   <section class="panel">
     <div class="panelHead">
       <h2 id="quizTitle">Quiz</h2>
-      <div class="meta">
-        <span id="progressPill" class="pill">Question 1/1</span>
-      </div>
+      <div class="meta"></div>
     </div>
 
     <div class="studentRow">
@@ -40,7 +82,6 @@
 
     <div id="result" class="result"></div>
   </section>
-
 </div>
 
 <script src="js/student.js"></script>
