@@ -173,6 +173,7 @@ function updateNavButtons() {
 function playPerfectFireworks() {
   const canvas = document.getElementById("fxCanvas");
   if (!canvas) return;
+  canvas.style.display = "block";
 
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
