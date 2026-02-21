@@ -272,3 +272,12 @@ button.danger {
   .studentRow { grid-template-columns: 1fr; }
   .brandName { font-size: 1.35rem; gap: 8px; }
 }
+
+.fxCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
