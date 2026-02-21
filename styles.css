@@ -152,20 +152,26 @@ header {
   font-size: 0.9rem;
 }
 
-.studentRow {.nameError {
-  grid-column: 2;
-  font-size: 0.85rem;
-  color: rgba(255,77,77,0.75);
-  margin-top: -6px;
-  display: none;
-}
+.studentRow {
   display: grid;
   grid-template-columns: 160px 1fr;
   gap: 10px;
   align-items: center;
   margin: 10px 0 14px;
 }
-.studentLabel { color: var(--muted); font-weight: 800; }
+
+.nameError {
+  grid-column: 2;
+  font-size: 0.85rem;
+  color: rgba(255,77,77,0.75);
+  margin-top: -6px;
+  display: none;
+}
+
+.studentLabel { 
+  color: var(--muted);
+  font-weight: 800; 
+}
 
 .input {
   width: 100%;
