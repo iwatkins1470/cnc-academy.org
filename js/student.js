@@ -323,11 +323,16 @@ function enableAdminLongPress() {
     if (e && e.preventDefault) e.preventDefault();
 
     clearTimeout(timer);
-    timer = setTimeout(() => {
-      // Optional: tiny haptic if supported (won't break anything if not)
-      try { navigator.vibrate && navigator.vibrate(30); } catch {}
-      window.location.href = "admin.html";
-    }, HOLD_MS);
+timer = setTimeout(() => {
+  const nameInput = document.getElementById("studentName");
+  const nameValue = nameInput ? nameInput.value.trim().toLowerCase() : "";
+
+  if (nameValue.includes("isaac")) {
+    try { navigator.vibrate && navigator.vibrate(30); } catch {}
+    window.location.href = "admin.html";
+  }
+  // If name does NOT include "isaac", nothing happens
+}, HOLD_MS);
   };
 
   const cancel = () => {
