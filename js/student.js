@@ -326,6 +326,9 @@ function finishReviewMode() {
 function showSummary() {
   const { score, total, missedNums, unansweredNums } = scoreQuiz();
   const r = ratingFor(score, total);
+  if (score === total) {
+  playPerfectFireworks();
+}
 
   const parts = [];
   parts.push(`<div class="big">Score: ${score}/${total}</div>`);
