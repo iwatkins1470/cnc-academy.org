@@ -1,66 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CNC Academy - Quiz</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <header>
+    <h1>CNC Academy</h1>
+    <p>Training Review Quiz</p>
+  </header>
 
-<header>
-  <h1>CNC Academy</h1>
-  <p>Training Review Quiz</p>
-</header>
+  <div class="container">
+    <h2 id="quizTitle">Quiz</h2>
 
-<div class="container">
-  <h2>Quiz</h2>
+    <!-- Quiz will be generated here -->
+    <form id="quizForm"></form>
 
-  <div class="question">
-    <p><strong>1. On a CNC lathe, which axis controls radial (in/out) movement?</strong></p>
-    <label><input type="radio" name="q1" value="0"> X Axis</label><br>
-    <label><input type="radio" name="q1" value="1"> Z Axis</label><br>
-    <label><input type="radio" name="q1" value="2"> A Axis</label><br>
-    <label><input type="radio" name="q1" value="3"> B Axis</label>
+    <div class="actions">
+      <button type="button" id="submitBtn">Submit Quiz</button>
+      <button type="button" id="resetBtn">Reset</button>
+    </div>
+
+    <div id="result" class="result"></div>
   </div>
 
-  <div class="question">
-    <p><strong>2. Static accuracy refers to:</strong></p>
-    <label><input type="radio" name="q2" value="0"> Cutting performance only</label><br>
-    <label><input type="radio" name="q2" value="1"> Geometric positioning checks</label><br>
-    <label><input type="radio" name="q2" value="2"> Servo alarm history</label><br>
-    <label><input type="radio" name="q2" value="3"> Spindle speed only</label>
-  </div>
-
-  <div class="question">
-    <p><strong>3. Before tuning servos after a crash, you should:</strong></p>
-    <label><input type="radio" name="q3" value="0"> Increase gain immediately</label><br>
-    <label><input type="radio" name="q3" value="1"> Verify mechanical condition first</label><br>
-    <label><input type="radio" name="q3" value="2"> Replace control board</label><br>
-    <label><input type="radio" name="q3" value="3"> Disable alarms</label>
-  </div>
-
-  <button type="button" onclick="submitQuiz()">Submit Quiz</button>
-
-  <div id="result" class="result"></div>
-</div>
-
-<script>
-function submitQuiz() {
-  var correct = { q1: "0", q2: "1", q3: "1" };
-  var score = 0;
-  var total = 0;
-
-  for (var q in correct) {
-    total++;
-    var pickedEl = document.querySelector('input[name="' + q + '"]:checked');
-    var picked = pickedEl ? pickedEl.value : null;
-    if (picked === correct[q]) score++;
-  }
-
-  document.getElementById("result").textContent = "Score: " + score + "/" + total;
-}
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
