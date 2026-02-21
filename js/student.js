@@ -242,7 +242,7 @@ function playPerfectFireworks() {
   const w = Math.floor(vw);
   const h = Math.floor(vh);
 
-  // hiDPI
+  // hiDPI scaling
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   canvas.width = Math.floor(w * dpr);
   canvas.height = Math.floor(h * dpr);
@@ -270,12 +270,16 @@ function playPerfectFireworks() {
     }
   }
 
-  // ---- run-until-click state ----
+  // ---- continuous mode state ----
   let running = true;
-  let frame = 0;
   let burstTimer = null;
 
-  function stopAll() {
+  function stopAll(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     running = false;
 
     if (burstTimer) {
@@ -286,18 +290,18 @@ function playPerfectFireworks() {
     ctx.clearRect(0, 0, w, h);
     canvas.style.display = "none";
 
-    // remove listeners
-    window.removeEventListener("pointerdown", stopAll, true);
-    window.removeEventListener("touchstart", stopAll, true);
-    window.removeEventListener("mousedown", stopAll, true);
+    // Remove listeners (must match capture setting)
+    window.removeEventListener("pointerdown", stopAll, { capture: true });
+    window.removeEventListener("touchstart", stopAll, { capture: true });
+    window.removeEventListener("mousedown", stopAll, { capture: true });
   }
 
-  // Stop on any interaction anywhere
-  window.addEventListener("pointerdown", stopAll, true);
-  window.addEventListener("touchstart", stopAll, true);
-  window.addEventListener("mousedown", stopAll, true);
+  // Stop fireworks on any interaction
+  window.addEventListener("pointerdown", stopAll, { capture: true, passive: false });
+  window.addEventListener("touchstart", stopAll, { capture: true, passive: false });
+  window.addEventListener("mousedown", stopAll, { capture: true, passive: false });
 
-  // Spawn bursts repeatedly until stopped
+  // Spawn bursts continuously
   burstTimer = setInterval(() => {
     burst(
       w * (0.15 + Math.random() * 0.70),
@@ -310,13 +314,11 @@ function playPerfectFireworks() {
 
   function step() {
     if (!running) return;
-    frame++;
 
-    // trails
+    // Trails effect
     ctx.fillStyle = "rgba(0,0,0,0.10)";
     ctx.fillRect(0, 0, w, h);
 
-    // subtle glow
     ctx.shadowBlur = 10;
     ctx.shadowColor = "rgba(255,138,0,0.55)";
 
