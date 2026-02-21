@@ -284,7 +284,7 @@ button.danger {
   inset: 0;
   width: 100vw;
   height: 100vh;
-  display: block;
-  pointer-events: none;
+  display: none; /* IMPORTANT: hidden unless effect runs */
+  pointer-events: none !important;
   z-index: 9999;
 }
