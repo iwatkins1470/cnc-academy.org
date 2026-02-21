@@ -235,19 +235,24 @@ button {
   font-weight: 900;
   letter-spacing: 0.2px;
   transition: transform 0.06s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
-  button { touch-action: manipulation;
+
+  touch-action: manipulation;
 }
+
 button:hover {
   border-color: rgba(255,138,0,0.75);
   background: linear-gradient(180deg, rgba(255,138,0,0.30), rgba(255,138,0,0.12));
 }
+
 button:active { transform: translateY(1px); }
+
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 button.ghost {
   border-color: rgba(255,255,255,0.16);
   background: rgba(255,255,255,0.04);
 }
+
 button.danger {
   border-color: rgba(255,77,77,0.50);
   background: rgba(255,77,77,0.10);
