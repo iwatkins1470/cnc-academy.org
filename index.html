@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CNC Academy - Quiz</title>
     <link rel="stylesheet" href="styles.css">
+    button { border: 3px solid red !important; position: relative; z-index: 9999; }
 </head>
 <body>
 
@@ -44,18 +45,35 @@
 
     <div id="result" class="result"></div>
 </div>
-
-<script src="script.js"></script>
 <script>
 function submitQuiz() {
-  const correct = { q1: "0", q2: "1", q3: "1" };
-  let score = 0, total = Object.keys(correct).length;
+  try {
+    alert("submitQuiz() ran"); // temporary debug
 
-  for (const q in correct) {
-    const picked = document.querySelector(`input[name="${q}"]:checked`)?.value;
-    if (picked === correct[q]) score++;
+    var correct = { q1: "0", q2: "1", q3: "1" };
+    var score = 0;
+    var total = 0;
+
+    for (var q in correct) {
+      total++;
+      var pickedEl = document.querySelector('input[name="' + q + '"]:checked');
+      var picked = pickedEl ? pickedEl.value : null;
+
+      if (picked === correct[q]) score++;
+    }
+
+    var resultEl = document.getElementById("result");
+    if (!resultEl) {
+      alert('Could not find element with id="result"');
+      return;
+    }
+
+    resultEl.textContent = "Score: " + score + "/" + total;
+  } catch (e) {
+    var resultEl2 = document.getElementById("result");
+    if (resultEl2) resultEl2.textContent = "JS error: " + e.message;
+    alert("JS error: " + e.message);
   }
-  document.getElementById("result").textContent = `Score: ${score}/${total}`;
 }
 </script>
 </body>
