@@ -187,28 +187,6 @@ function playPerfectFireworks() {
   canvas.style.height = h + "px";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  // Particles
-  const particles = [];
-  const bursts = 4;
-  const colors = ["#ff8a00", "#ffb15c", "#e8eef5", "#ffb000"];
-
-  function burst(x, y) {
-    const count = 80;
-    for (let i = 0; i < count; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const s = 2 + Math.random() * 5;
-      particles.push({
-        x, y,
-        vx: Math.cos(a) * s,
-        vy: Math.sin(a) * s,
-        life: 70 + Math.random() * 40,
-        age: 0,
-        size: 2 + Math.random() * 2,
-        color: colors[(Math.random() * colors.length) | 0]
-      });
-    }
-  }
-
   // Launch a few bursts
   for (let b = 0; b < bursts; b++) {
     setTimeout(() => {
