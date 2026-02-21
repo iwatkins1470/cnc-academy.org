@@ -31,13 +31,88 @@ body {
   line-height: 1.45;
 }
 
+/* Header / Brand */
 header {
-  padding: 28px 16px 18px;
+  padding: 18px 16px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(255,138,0,0.08), transparent 70%);
 }
-header h1 { margin: 0; font-size: 1.8rem; letter-spacing: 0.4px; }
-header p { margin: 6px 0 0; color: var(--muted); }
+
+.brand {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.brandLeft {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.logoMark {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, rgba(255,138,0,0.22), rgba(255,138,0,0.06));
+  border: 1px solid rgba(255,138,0,0.35);
+  box-shadow: var(--shadow);
+}
+
+/* Tool logo SVG colors */
+.toolsIcon { width: 40px; height: 40px; }
+.toolsIcon .wrench { fill: rgba(255, 138, 0, 0.95); }
+.toolsIcon .hole { fill: rgba(11, 13, 16, 0.95); }
+.toolsIcon .driver { fill: rgba(255, 177, 92, 0.95); }
+.toolsIcon .metal { fill: rgba(232, 238, 245, 0.80); }
+.toolsIcon .rule { fill: rgba(255, 138, 0, 0.30); }
+.toolsIcon .tick { stroke: rgba(232, 238, 245, 0.55); stroke-width: 2; stroke-linecap: round; fill: none; }
+
+.brandText { min-width: 0; }
+.brandName {
+  font-size: 1.55rem;
+  font-weight: 950;
+  letter-spacing: 0.6px;
+  line-height: 1.05;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.logoCNC {
+  color: var(--accent);
+}
+
+.logoAcademy {
+  color: rgba(232, 238, 245, 0.88);
+}
+
+/* The hidden admin trigger (Y) */
+.logoY {
+  display: inline-block;
+  user-select: none;
+  -webkit-user-select: none;
+  /* No visible hint; still tappable */
+}
+
+.brandTag {
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.brandRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 .container {
   max-width: 980px;
@@ -73,7 +148,7 @@ header p { margin: 6px 0 0; color: var(--muted); }
   border: 1px solid rgba(255,138,0,0.35);
   background: rgba(255,138,0,0.10);
   color: var(--text);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.9rem;
 }
 
@@ -84,7 +159,7 @@ header p { margin: 6px 0 0; color: var(--muted); }
   align-items: center;
   margin: 10px 0 14px;
 }
-.studentLabel { color: var(--muted); font-weight: 700; }
+.studentLabel { color: var(--muted); font-weight: 800; }
 
 .input {
   width: 100%;
@@ -100,7 +175,6 @@ header p { margin: 6px 0 0; color: var(--muted); }
   box-shadow: 0 0 0 3px rgba(255,138,0,0.15);
 }
 
-/* Question stage */
 #questionStage { margin-top: 8px; }
 
 .qCard {
@@ -131,13 +205,6 @@ header p { margin: 6px 0 0; color: var(--muted); }
 .choice:active { transform: translateY(1px); }
 .choice input[type="radio"] { transform: scale(1.15); accent-color: var(--accent); }
 
-.feedback {
-  margin-top: 10px;
-  font-weight: 800;
-  color: var(--muted);
-}
-
-/* Nav row */
 .navRow {
   display: flex;
   gap: 10px;
@@ -153,7 +220,7 @@ button {
   padding: 10px 14px;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.2px;
   transition: transform 0.06s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
 }
@@ -173,7 +240,13 @@ button.danger {
   background: rgba(255,77,77,0.10);
 }
 
-/* Result */
+.reviewBtn {
+  margin-top: 10px;
+  border-color: rgba(255,176,0,0.60);
+  background: rgba(255,176,0,0.15);
+}
+.reviewBtn:hover { background: rgba(255,176,0,0.25); }
+
 .result {
   margin-top: 14px;
   padding: 12px 14px;
@@ -189,56 +262,7 @@ button.danger {
 .result .rating.warn { color: var(--warn); }
 .result .rating.bad  { color: var(--bad); }
 
-/* Dashboard */
-.dashRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 6px 0 12px;
-}
-.hint { color: var(--muted); }
-
-.tableWrap {
-  overflow-x: auto;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.02);
-}
-
-.dashTable {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 560px;
-}
-.dashTable th, .dashTable td {
-  padding: 10px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  text-align: left;
-  white-space: nowrap;
-}
-.dashTable th { color: var(--muted); font-weight: 900; }
-.dashTable tr:last-child td { border-bottom: none; }
-
-.tag {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-weight: 900;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.04);
-}
-.tag.good { border-color: rgba(46,204,113,0.45); color: rgba(46,204,113,0.95); }
-.tag.warn { border-color: rgba(255,176,0,0.55); color: rgba(255,176,0,0.95); }
-.tag.bad  { border-color: rgba(255,77,77,0.55); color: rgba(255,77,77,0.95); }
-
 @media (max-width: 600px) {
   .studentRow { grid-template-columns: 1fr; }
-.reviewBtn {
-  margin-top: 10px;
-  border-color: rgba(255,176,0,0.60);
-  background: rgba(255,176,0,0.15);
-}
-.reviewBtn:hover {
-  background: rgba(255,176,0,0.25);
+  .brandName { font-size: 1.35rem; gap: 8px; }
 }
