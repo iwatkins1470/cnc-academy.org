@@ -366,20 +366,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return nameInput.value.trim().length > 0;
   }
 
-  function updateNameRequirement() {
-    const valid = nameIsValid();
+function updateNameRequirement() {
+  const valid = nameIsValid();
+  const errorEl = $("nameError");
 
-    // Disable navigation if name empty
-    $("nextBtn").disabled = !valid;
-    $("submitBtn").disabled = !valid;
+  $("nextBtn").disabled = !valid;
+  $("submitBtn").disabled = !valid;
 
-    // Optional visual cue
-    if (!valid) {
-      nameInput.style.borderColor = "rgba(255,77,77,0.6)";
-    } else {
-      nameInput.style.borderColor = "";
-    }
+  if (!valid) {
+    nameInput.style.borderColor = "rgba(255,77,77,0.6)";
+    if (errorEl) errorEl.style.display = "block";
+  } else {
+    nameInput.style.borderColor = "";
+    if (errorEl) errorEl.style.display = "none";
   }
+}
 
   // Watch for typing
   nameInput.addEventListener("input", updateNameRequirement);
