@@ -36,6 +36,11 @@ let reviewPos = 0;
 // ============================================
 function $(id) { return document.getElementById(id); }
 
+function nameIsValid() {
+  const nameInput = $("studentName");
+  return !!nameInput && nameInput.value.trim().length > 0;
+}
+
 function getAttempts() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -94,11 +99,39 @@ function computeMissedIndexes() {
 }
 
 // ============================================
+// NAME REQUIREMENT (LOCK QUIZ UNTIL NAME ENTERED)
+// ============================================
+function updateNameRequirement() {
+  const valid = nameIsValid();
+  const nameInput = $("studentName");
+  const errorEl = $("nameError");
+
+  // Lock navigation + actions until name exists
+  $("backBtn").disabled = !valid;
+  $("nextBtn").disabled = !valid;
+  $("submitBtn").disabled = !valid;
+  $("resetBtn").disabled = !valid;
+
+  if (!valid) {
+    if (nameInput) nameInput.style.borderColor = "rgba(255,77,77,0.6)";
+    if (errorEl) errorEl.style.display = "block";
+  } else {
+    if (nameInput) nameInput.style.borderColor = "";
+    if (errorEl) errorEl.style.display = "none";
+  }
+
+  // Re-render so answers lock/unlock immediately
+  renderCurrentQuestion();
+}
+
+// ============================================
 // RENDER (ONE QUESTION AT A TIME)
 // ============================================
 function renderCurrentQuestion() {
   const q = QUIZ.questions[currentIndex];
   const stage = $("questionStage");
+  if (!stage) return;
+
   stage.innerHTML = "";
 
   const card = document.createElement("div");
@@ -110,6 +143,8 @@ function renderCurrentQuestion() {
   p.innerHTML = `<strong>${currentIndex + 1}. ${q.text}</strong>`;
   card.appendChild(p);
 
+  const lockAnswers = !nameIsValid();
+
   q.choices.forEach((choice, idx) => {
     const label = document.createElement("label");
     label.className = "choice";
@@ -118,9 +153,14 @@ function renderCurrentQuestion() {
     input.type = "radio";
     input.name = q.id;
     input.value = String(idx);
+    input.disabled = lockAnswers;
+
     if (answers[q.id] === idx) input.checked = true;
 
     input.addEventListener("change", () => {
+      // Hard lock: ignore if name isn't valid
+      if (!nameIsValid()) return;
+
       answers[q.id] = idx;
 
       if (inReviewMode) {
@@ -153,6 +193,20 @@ function renderCurrentQuestion() {
 }
 
 function updateNavButtons() {
+  // If name missing, keep things locked
+  if (!nameIsValid()) {
+    $("backBtn").disabled = true;
+    $("nextBtn").disabled = true;
+    $("submitBtn").disabled = true;
+    $("resetBtn").disabled = true;
+
+    // Still show proper Next/Submit layout depending on last question
+    const onLast = currentIndex === QUIZ.questions.length - 1;
+    $("submitBtn").style.display = onLast ? "inline-block" : "none";
+    $("nextBtn").style.display = onLast ? "none" : "inline-block";
+    return;
+  }
+
   if (inReviewMode) {
     $("backBtn").disabled = reviewQueue.length <= 1 || reviewPos === 0;
     $("nextBtn").disabled = reviewQueue.length <= 1 || reviewPos >= reviewQueue.length - 1;
@@ -170,6 +224,9 @@ function updateNavButtons() {
   $("nextBtn").style.display = onLast ? "none" : "inline-block";
 }
 
+// ============================================
+// FIREWORKS (PERFECT SCORE)
+// ============================================
 function playPerfectFireworks() {
   const canvas = document.getElementById("fxCanvas");
   if (!canvas) return;
@@ -300,6 +357,8 @@ function scoreQuiz() {
 }
 
 function enterReviewMode() {
+  if (!nameIsValid()) return;
+
   reviewQueue = computeMissedIndexes();
   if (reviewQueue.length === 0) return;
 
@@ -327,12 +386,14 @@ function finishReviewMode() {
 }
 
 function showSummary() {
+  if (!nameIsValid()) return;
+
   const { score, total, missedNums, unansweredNums } = scoreQuiz();
   const r = ratingFor(score, total);
-  
+
   if (score === total) {
-  playPerfectFireworks();
-}
+    playPerfectFireworks();
+  }
 
   const parts = [];
   parts.push(`<div class="big">Score: ${score}/${total}</div>`);
@@ -352,7 +413,8 @@ function showSummary() {
   $("result").innerHTML = parts.join("");
 
   if (missedNums.length > 0) {
-    $("reviewBtn").addEventListener("click", enterReviewMode);
+    const reviewBtn = $("reviewBtn");
+    if (reviewBtn) reviewBtn.addEventListener("click", enterReviewMode);
   }
 
   const name = ($("studentName").value || "").trim() || "—";
@@ -374,6 +436,8 @@ function showSummary() {
 // NAV ACTIONS
 // ============================================
 function nextQuestion() {
+  if (!nameIsValid()) return;
+
   if (inReviewMode) {
     if (reviewPos < reviewQueue.length - 1) {
       reviewPos++;
@@ -390,6 +454,8 @@ function nextQuestion() {
 }
 
 function prevQuestion() {
+  if (!nameIsValid()) return;
+
   if (inReviewMode) {
     if (reviewPos > 0) {
       reviewPos--;
@@ -406,6 +472,8 @@ function prevQuestion() {
 }
 
 function resetAll() {
+  if (!nameIsValid()) return;
+
   QUIZ.questions.forEach(q => answers[q.id] = null);
   currentIndex = 0;
 
@@ -426,24 +494,20 @@ function enableAdminLongPress() {
 
   const HOLD_MS = 1500;
   let timer = null;
-  let moved = false;
 
   const start = (e) => {
-    moved = false;
-    // Prevent iOS text selection / callout
     if (e && e.preventDefault) e.preventDefault();
-
     clearTimeout(timer);
-timer = setTimeout(() => {
-  const nameInput = document.getElementById("studentName");
-  const nameValue = nameInput ? nameInput.value.trim().toLowerCase() : "";
 
-  if (nameValue.includes("isaac")) {
-    try { navigator.vibrate && navigator.vibrate(30); } catch {}
-    window.location.href = "admin.html";
-  }
-  // If name does NOT include "isaac", nothing happens
-}, HOLD_MS);
+    timer = setTimeout(() => {
+      const nameInput = document.getElementById("studentName");
+      const nameValue = nameInput ? nameInput.value.trim().toLowerCase() : "";
+
+      if (nameValue.includes("isaac")) {
+        try { navigator.vibrate && navigator.vibrate(30); } catch {}
+        window.location.href = "admin.html";
+      }
+    }, HOLD_MS);
   };
 
   const cancel = () => {
@@ -451,51 +515,18 @@ timer = setTimeout(() => {
     timer = null;
   };
 
-  const markMove = () => { moved = true; cancel(); };
-
-  // Touch + mouse support
   trigger.addEventListener("touchstart", start, { passive: false });
   trigger.addEventListener("touchend", cancel);
   trigger.addEventListener("touchcancel", cancel);
-  trigger.addEventListener("touchmove", markMove);
 
   trigger.addEventListener("mousedown", start);
   trigger.addEventListener("mouseup", cancel);
   trigger.addEventListener("mouseleave", cancel);
-  trigger.addEventListener("mousemove", () => { if (timer) markMove(); });
 }
 
 // ============================================
-// INIT
+// iPHONE-SAFE TAP BINDING
 // ============================================
-document.addEventListener("DOMContentLoaded", () => {
-  $("quizTitle").textContent = QUIZ.title;
-
-  const nameInput = $("studentName");
-
-  function nameIsValid() {
-    return nameInput.value.trim().length > 0;
-  }
-
-function updateNameRequirement() {
-  const valid = nameIsValid();
-  const errorEl = $("nameError");
-
-  $("nextBtn").disabled = !valid;
-  $("submitBtn").disabled = !valid;
-
-  if (!valid) {
-    nameInput.style.borderColor = "rgba(255,77,77,0.6)";
-    if (errorEl) errorEl.style.display = "block";
-  } else {
-    nameInput.style.borderColor = "";
-    if (errorEl) errorEl.style.display = "none";
-  }
-}
-
-  // Watch for typing
-  nameInput.addEventListener("input", updateNameRequirement);
-
 function bindTap(id, handler) {
   const el = $(id);
   if (!el) return;
@@ -507,8 +538,6 @@ function bindTap(id, handler) {
     e.preventDefault();
     e.stopPropagation();
     handler(e);
-
-    // Reset shortly after so normal clicks work (desktop)
     setTimeout(() => { justHandledTouch = false; }, 400);
   }, { passive: false });
 
@@ -518,13 +547,24 @@ function bindTap(id, handler) {
   });
 }
 
-bindTap("backBtn", prevQuestion);
-bindTap("nextBtn", nextQuestion);
-bindTap("submitBtn", showSummary);
-bindTap("resetBtn", resetAll);
+// ============================================
+// INIT
+// ============================================
+document.addEventListener("DOMContentLoaded", () => {
+  $("quizTitle").textContent = QUIZ.title;
+
+  const nameInput = $("studentName");
+  if (nameInput) {
+    nameInput.addEventListener("input", updateNameRequirement);
+  }
+
+  bindTap("backBtn", prevQuestion);
+  bindTap("nextBtn", nextQuestion);
+  bindTap("submitBtn", showSummary);
+  bindTap("resetBtn", resetAll);
 
   enableAdminLongPress();
 
-  updateNameRequirement();
+  updateNameRequirement();   // shows message + locks quiz immediately
   renderCurrentQuestion();
 });
