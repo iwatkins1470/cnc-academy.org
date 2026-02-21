@@ -124,7 +124,6 @@ function renderCurrentQuestion() {
       answers[q.id] = idx;
 
       if (inReviewMode) {
-        // If corrected, drop it from the review list and move forward
         if (isCorrect(currentIndex)) {
           reviewQueue = reviewQueue.filter(i => i !== currentIndex);
           if (reviewQueue.length === 0) {
@@ -157,7 +156,6 @@ function updateNavButtons() {
   if (inReviewMode) {
     $("backBtn").disabled = reviewQueue.length <= 1 || reviewPos === 0;
     $("nextBtn").disabled = reviewQueue.length <= 1 || reviewPos >= reviewQueue.length - 1;
-
     $("submitBtn").style.display = "none";
     $("nextBtn").style.display = "inline-block";
     $("backBtn").style.display = "inline-block";
@@ -246,7 +244,6 @@ function showSummary() {
     $("reviewBtn").addEventListener("click", enterReviewMode);
   }
 
-  // Save attempt (dashboard reads this on admin page)
   const name = ($("studentName").value || "").trim() || "—";
   const attempt = {
     ts: Date.now(),
@@ -310,6 +307,49 @@ function resetAll() {
 }
 
 // ============================================
+// SECRET INSTRUCTOR ACCESS (LONG PRESS ON "Y")
+// ============================================
+function enableAdminLongPress() {
+  const trigger = document.getElementById("adminTrigger");
+  if (!trigger) return;
+
+  const HOLD_MS = 1500;
+  let timer = null;
+  let moved = false;
+
+  const start = (e) => {
+    moved = false;
+    // Prevent iOS text selection / callout
+    if (e && e.preventDefault) e.preventDefault();
+
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      // Optional: tiny haptic if supported (won't break anything if not)
+      try { navigator.vibrate && navigator.vibrate(30); } catch {}
+      window.location.href = "admin.html";
+    }, HOLD_MS);
+  };
+
+  const cancel = () => {
+    clearTimeout(timer);
+    timer = null;
+  };
+
+  const markMove = () => { moved = true; cancel(); };
+
+  // Touch + mouse support
+  trigger.addEventListener("touchstart", start, { passive: false });
+  trigger.addEventListener("touchend", cancel);
+  trigger.addEventListener("touchcancel", cancel);
+  trigger.addEventListener("touchmove", markMove);
+
+  trigger.addEventListener("mousedown", start);
+  trigger.addEventListener("mouseup", cancel);
+  trigger.addEventListener("mouseleave", cancel);
+  trigger.addEventListener("mousemove", () => { if (timer) markMove(); });
+}
+
+// ============================================
 // INIT
 // ============================================
 document.addEventListener("DOMContentLoaded", () => {
@@ -319,6 +359,8 @@ document.addEventListener("DOMContentLoaded", () => {
   $("nextBtn").addEventListener("click", nextQuestion);
   $("submitBtn").addEventListener("click", showSummary);
   $("resetBtn").addEventListener("click", resetAll);
+
+  enableAdminLongPress();
 
   renderCurrentQuestion();
 });
