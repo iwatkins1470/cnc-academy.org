@@ -22,6 +22,8 @@ const QUIZ = {
 // ============================================
 const STORAGE_KEY = "cnc_academy_attempts_v1";
 let currentIndex = 0;
+
+// iPhone Safari ghost-tap guard
 let navLockUntil = 0;
 
 // answers[qid] = chosenIndex (number) or null
@@ -40,6 +42,23 @@ function $(id) { return document.getElementById(id); }
 function nameIsValid() {
   const nameInput = $("studentName");
   return !!nameInput && nameInput.value.trim().length > 0;
+}
+
+// Stronger iPhone fix: temporarily disable interaction on the whole question area
+function lockQuestionStage(ms = 650) {
+  navLockUntil = Date.now() + ms;
+
+  const stage = $("questionStage");
+  if (!stage) return;
+
+  stage.style.pointerEvents = "none";
+
+  setTimeout(() => {
+    // Only unlock if our lock window has passed
+    if (Date.now() >= navLockUntil) {
+      stage.style.pointerEvents = "";
+    }
+  }, ms);
 }
 
 function getAttempts() {
@@ -75,12 +94,15 @@ function ratingFor(score, total) {
 }
 
 function updateProgressPill() {
+  const pill = $("progressPill");
+  if (!pill) return;
+
   if (inReviewMode) {
     const remaining = reviewQueue.length;
     const pos = Math.min(reviewPos + 1, Math.max(remaining, 1));
-    $("progressPill").textContent = `Review: ${pos}/${Math.max(remaining, 1)} remaining`;
+    pill.textContent = `Review: ${pos}/${Math.max(remaining, 1)} remaining`;
   } else {
-    $("progressPill").textContent = `Question ${currentIndex + 1}/${QUIZ.questions.length}`;
+    pill.textContent = `Question ${currentIndex + 1}/${QUIZ.questions.length}`;
   }
 }
 
@@ -107,11 +129,18 @@ function updateNameRequirement() {
   const nameInput = $("studentName");
   const errorEl = $("nameError");
 
-  // Lock navigation + actions until name exists
-  $("backBtn").disabled = !valid;
-  $("nextBtn").disabled = !valid;
-  $("submitBtn").disabled = !valid;
-  $("resetBtn").disabled = !valid;
+  // Lock nav/actions until name exists
+  const backBtn = $("backBtn");
+  const nextBtn = $("nextBtn");
+  const submitBtn = $("submitBtn");
+  const resetBtn = $("resetBtn");
+
+  if (backBtn) backBtn.disabled = !valid;
+  if (nextBtn) nextBtn.disabled = !valid;
+  if (submitBtn) submitBtn.disabled = !valid;
+
+  // I recommend leaving Reset enabled so you can always recover from a weird state
+  if (resetBtn) resetBtn.disabled = false;
 
   if (!valid) {
     if (nameInput) nameInput.style.borderColor = "rgba(255,77,77,0.6)";
@@ -151,6 +180,13 @@ function renderCurrentQuestion() {
     label.className = "choice";
 
     // iPhone Safari ghost-tap guard: block a leftover tap right after Next/Back
+    label.addEventListener("touchend", (e) => {
+      if (Date.now() < navLockUntil) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, { passive: false });
+
     label.addEventListener("click", (e) => {
       if (Date.now() < navLockUntil) {
         e.preventDefault();
@@ -178,15 +214,18 @@ function renderCurrentQuestion() {
       if (inReviewMode) {
         if (isCorrect(currentIndex)) {
           reviewQueue = reviewQueue.filter(i => i !== currentIndex);
+
           if (reviewQueue.length === 0) {
             finishReviewMode();
             return;
           }
+
           if (reviewPos >= reviewQueue.length) reviewPos = Math.max(reviewQueue.length - 1, 0);
           currentIndex = reviewQueue[Math.min(reviewPos, reviewQueue.length - 1)];
         }
       } else {
-        $("result").innerHTML = "";
+        const result = $("result");
+        if (result) result.innerHTML = "";
       }
 
       updateNavButtons();
@@ -200,44 +239,54 @@ function renderCurrentQuestion() {
   });
 
   stage.appendChild(card);
+
   updateProgressPill();
   updateNavButtons();
 }
 
 function updateNavButtons() {
-  // If name missing, keep things locked
+  const backBtn = $("backBtn");
+  const nextBtn = $("nextBtn");
+  const submitBtn = $("submitBtn");
+  const resetBtn = $("resetBtn");
+
+  // Always allow reset as a safe escape hatch
+  if (resetBtn) resetBtn.disabled = false;
+
+  // If name missing, keep quiz locked
   if (!nameIsValid()) {
-    $("backBtn").disabled = true;
-    $("nextBtn").disabled = true;
-    $("submitBtn").disabled = true;
-    $("resetBtn").disabled = true;
+    if (backBtn) backBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    if (submitBtn) submitBtn.disabled = true;
 
     // Still show proper Next/Submit layout depending on last question
     const onLast = currentIndex === QUIZ.questions.length - 1;
-    $("submitBtn").style.display = onLast ? "inline-block" : "none";
-    $("nextBtn").style.display = onLast ? "none" : "inline-block";
+    if (submitBtn) submitBtn.style.display = onLast ? "inline-block" : "none";
+    if (nextBtn) nextBtn.style.display = onLast ? "none" : "inline-block";
     return;
   }
 
   if (inReviewMode) {
-    $("backBtn").disabled = reviewQueue.length <= 1 || reviewPos === 0;
-    $("nextBtn").disabled = reviewQueue.length <= 1 || reviewPos >= reviewQueue.length - 1;
-    $("submitBtn").style.display = "none";
-    $("nextBtn").style.display = "inline-block";
-    $("backBtn").style.display = "inline-block";
+    if (backBtn) backBtn.disabled = reviewQueue.length <= 1 || reviewPos === 0;
+    if (nextBtn) nextBtn.disabled = reviewQueue.length <= 1 || reviewPos >= reviewQueue.length - 1;
+
+    if (submitBtn) submitBtn.style.display = "none";
+    if (nextBtn) nextBtn.style.display = "inline-block";
+    if (backBtn) backBtn.style.display = "inline-block";
     return;
   }
 
-  $("backBtn").disabled = currentIndex === 0;
-  $("nextBtn").disabled = currentIndex === QUIZ.questions.length - 1;
+  if (backBtn) backBtn.disabled = currentIndex === 0;
+  if (nextBtn) nextBtn.disabled = currentIndex === QUIZ.questions.length - 1;
 
   const onLast = currentIndex === QUIZ.questions.length - 1;
-  $("submitBtn").style.display = onLast ? "inline-block" : "none";
-  $("nextBtn").style.display = onLast ? "none" : "inline-block";
+  if (submitBtn) submitBtn.style.display = onLast ? "inline-block" : "none";
+  if (nextBtn) nextBtn.style.display = onLast ? "none" : "inline-block";
 }
 
 // ============================================
-// FIREWORKS (PERFECT SCORE)
+// FIREWORKS (PERFECT SCORE) - continuous until click
+// IMPORTANT: does NOT touch your result/summary text
 // ============================================
 function playPerfectFireworks() {
   const canvas = document.getElementById("fxCanvas");
@@ -282,11 +331,11 @@ function playPerfectFireworks() {
     }
   }
 
-  // ---- continuous mode state ----
   let running = true;
   let burstTimer = null;
 
   function stopAll(e) {
+    // Eat the tap so it doesn't click buttons underneath
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -302,13 +351,13 @@ function playPerfectFireworks() {
     ctx.clearRect(0, 0, w, h);
     canvas.style.display = "none";
 
-    // Remove listeners (must match capture setting)
-    window.removeEventListener("pointerdown", stopAll, { capture: true });
-    window.removeEventListener("touchstart", stopAll, { capture: true });
-    window.removeEventListener("mousedown", stopAll, { capture: true });
+    // Remove listeners (capture = true)
+    window.removeEventListener("pointerdown", stopAll, true);
+    window.removeEventListener("touchstart", stopAll, true);
+    window.removeEventListener("mousedown", stopAll, true);
   }
 
-  // Stop fireworks on any interaction
+  // Stop fireworks on any interaction (capture phase)
   window.addEventListener("pointerdown", stopAll, { capture: true, passive: false });
   window.addEventListener("touchstart", stopAll, { capture: true, passive: false });
   window.addEventListener("mousedown", stopAll, { capture: true, passive: false });
@@ -398,9 +447,12 @@ function enterReviewMode() {
   reviewPos = 0;
   currentIndex = reviewQueue[0];
 
-  $("result").innerHTML =
-    `<div class="sub">Review mode: fix the missed questions. As you correct one, it drops off the list.</div>`;
+  const result = $("result");
+  if (result) {
+    result.innerHTML = `<div class="sub">Review mode: fix the missed questions. As you correct one, it drops off the list.</div>`;
+  }
 
+  lockQuestionStage(650);
   renderCurrentQuestion();
 }
 
@@ -409,11 +461,15 @@ function finishReviewMode() {
   reviewQueue = [];
   reviewPos = 0;
 
-  $("result").innerHTML =
-    `<div class="big">Review complete ✅</div>
-     <div class="sub">Nice. You corrected all missed questions. You can reset and retake anytime.</div>`;
+  const result = $("result");
+  if (result) {
+    result.innerHTML =
+      `<div class="big">Review complete ✅</div>
+       <div class="sub">Nice. You corrected all missed questions. You can reset and retake anytime.</div>`;
+  }
 
   currentIndex = 0;
+  lockQuestionStage(650);
   renderCurrentQuestion();
 }
 
@@ -442,7 +498,8 @@ function showSummary() {
     parts.push(`<button type="button" id="reviewBtn" class="reviewBtn">Review Missed Questions</button>`);
   }
 
-  $("result").innerHTML = parts.join("");
+  const result = $("result");
+  if (result) result.innerHTML = parts.join("");
 
   if (missedNums.length > 0) {
     const reviewBtn = $("reviewBtn");
@@ -474,7 +531,7 @@ function nextQuestion() {
     if (reviewPos < reviewQueue.length - 1) {
       reviewPos++;
       currentIndex = reviewQueue[reviewPos];
-      navLockUntil = Date.now() + 250;
+      lockQuestionStage(650);
       renderCurrentQuestion();
     }
     return;
@@ -482,7 +539,7 @@ function nextQuestion() {
 
   if (currentIndex < QUIZ.questions.length - 1) {
     currentIndex++;
-    navLockUntil = Date.now() + 250;
+    lockQuestionStage(650);
     renderCurrentQuestion();
   }
 }
@@ -494,7 +551,7 @@ function prevQuestion() {
     if (reviewPos > 0) {
       reviewPos--;
       currentIndex = reviewQueue[reviewPos];
-      navLockUntil = Date.now() + 250;
+      lockQuestionStage(650);
       renderCurrentQuestion();
     }
     return;
@@ -502,14 +559,13 @@ function prevQuestion() {
 
   if (currentIndex > 0) {
     currentIndex--;
-    navLockUntil = Date.now() + 250;
+    lockQuestionStage(650);
     renderCurrentQuestion();
   }
 }
 
 function resetAll() {
-  if (!nameIsValid()) return;
-
+  // Allow reset even if name is blank (helps recover from weird states)
   QUIZ.questions.forEach(q => answers[q.id] = null);
   currentIndex = 0;
 
@@ -517,8 +573,14 @@ function resetAll() {
   reviewQueue = [];
   reviewPos = 0;
 
-  $("result").innerHTML = "";
+  const result = $("result");
+  if (result) result.innerHTML = "";
+
+  lockQuestionStage(300);
   renderCurrentQuestion();
+
+  // re-check name lock state + message
+  updateNameRequirement();
 }
 
 // ============================================
@@ -561,7 +623,7 @@ function enableAdminLongPress() {
 }
 
 // ============================================
-// iPHONE-SAFE TAP BINDING
+// iPHONE-SAFE TAP BINDING (avoids double fire of touch + click)
 // ============================================
 function bindTap(id, handler) {
   const el = $(id);
@@ -587,7 +649,8 @@ function bindTap(id, handler) {
 // INIT
 // ============================================
 document.addEventListener("DOMContentLoaded", () => {
-  $("quizTitle").textContent = QUIZ.title;
+  const titleEl = $("quizTitle");
+  if (titleEl) titleEl.textContent = QUIZ.title;
 
   const nameInput = $("studentName");
   if (nameInput) {
@@ -601,6 +664,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   enableAdminLongPress();
 
-  updateNameRequirement();   // shows message + locks quiz immediately
+  updateNameRequirement(); // shows message + locks quiz immediately
   renderCurrentQuestion();
 });
