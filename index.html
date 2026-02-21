@@ -26,6 +26,167 @@
     <div id="result" class="result"></div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script.js">
+    // ================================
+// EDIT QUESTIONS HERE ONLY
+// ================================
+const QUIZ = {
+  title: "Quiz",
+  questions: [
+    {
+      id: "q1",
+      text: "On a CNC lathe, which axis controls radial (in/out) movement?",
+      choices: ["X Axis", "Z Axis", "A Axis", "B Axis"],
+      correctIndex: 0,
+    },
+    {
+      id: "q2",
+      text: "Static accuracy refers to:",
+      choices: [
+        "Cutting performance only",
+        "Geometric positioning checks",
+        "Servo alarm history",
+        "Spindle speed only",
+      ],
+      correctIndex: 1,
+    },
+    {
+      id: "q3",
+      text: "Before tuning servos after a crash, you should:",
+      choices: [
+        "Increase gain immediately",
+        "Verify mechanical condition first",
+        "Replace control board",
+        "Disable alarms",
+      ],
+      correctIndex: 1,
+    },
+  ],
+};
+
+// ================================
+// QUIZ ENGINE (no edits needed)
+// ================================
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderQuiz() {
+  const titleEl = document.getElementById("quizTitle");
+  const formEl = document.getElementById("quizForm");
+
+  titleEl.textContent = QUIZ.title;
+  formEl.innerHTML = "";
+
+  QUIZ.questions.forEach((q, idx) => {
+    const card = document.createElement("div");
+    card.className = "question";
+    card.setAttribute("data-qid", q.id);
+
+    const qNumber = idx + 1;
+
+    const prompt = document.createElement("p");
+    prompt.className = "qtext";
+    prompt.innerHTML = `<strong>${qNumber}. ${escapeHtml(q.text)}</strong>`;
+    card.appendChild(prompt);
+
+    q.choices.forEach((choice, cIdx) => {
+      const label = document.createElement("label");
+      label.className = "choice";
+
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = q.id;
+      input.value = String(cIdx);
+
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(" " + choice));
+      card.appendChild(label);
+    });
+
+    const feedback = document.createElement("div");
+    feedback.className = "feedback";
+    card.appendChild(feedback);
+
+    formEl.appendChild(card);
+  });
+
+  document.getElementById("result").textContent = "";
+}
+
+function getPickedIndex(qid) {
+  const picked = document.querySelector(`input[name="${qid}"]:checked`);
+  return picked ? Number(picked.value) : null;
+}
+
+function submitQuiz() {
+  let score = 0;
+  const missed = [];
+
+  QUIZ.questions.forEach((q, idx) => {
+    const picked = getPickedIndex(q.id);
+    const card = document.querySelector(`.question[data-qid="${q.id}"]`);
+    const feedback = card.querySelector(".feedback");
+
+    // Clear prior state
+    card.classList.remove("correct", "incorrect", "unanswered");
+    feedback.textContent = "";
+
+    if (picked === null) {
+      card.classList.add("unanswered");
+      feedback.textContent = "No answer selected.";
+      missed.push(idx + 1);
+      return;
+    }
+
+    if (picked === q.correctIndex) {
+      score++;
+      card.classList.add("correct");
+      feedback.textContent = "Correct.";
+    } else {
+      card.classList.add("incorrect");
+      feedback.textContent = `Incorrect. Correct answer: ${q.choices[q.correctIndex]}`;
+      missed.push(idx + 1);
+    }
+  });
+
+  const total = QUIZ.questions.length;
+  const resultEl = document.getElementById("result");
+
+  if (missed.length) {
+    resultEl.textContent = `Score: ${score}/${total} — Missed: ${missed.join(", ")}`;
+  } else {
+    resultEl.textContent = `Score: ${score}/${total} — Perfect!`;
+  }
+}
+
+function resetQuiz() {
+  // Uncheck everything
+  document.querySelectorAll(`#quizForm input[type="radio"]`).forEach((el) => {
+    el.checked = false;
+  });
+
+  // Clear highlighting/feedback
+  document.querySelectorAll(".question").forEach((card) => {
+    card.classList.remove("correct", "incorrect", "unanswered");
+    const feedback = card.querySelector(".feedback");
+    if (feedback) feedback.textContent = "";
+  });
+
+  document.getElementById("result").textContent = "";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderQuiz();
+
+  document.getElementById("submitBtn").addEventListener("click", submitQuiz);
+  document.getElementById("resetBtn").addEventListener("click", resetQuiz);
+});
+  </script>
 </body>
 </html>
