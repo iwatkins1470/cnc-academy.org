@@ -239,11 +239,12 @@ function playPerfectFireworks() {
     ctx.globalAlpha = 1;
 
     // Stop after particles finish or timeout
-    if (particles.length === 0 || frame > 220) {
-      running = false;
-      ctx.clearRect(0, 0, w, h);
-      return;
-    }
+if (particles.length === 0 || frame > 240) {
+  running = false;
+  ctx.clearRect(0, 0, w, h);
+  canvas.style.display = "none";
+  return;
+}
 
     requestAnimationFrame(step);
   }
