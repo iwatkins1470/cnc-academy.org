@@ -170,6 +170,110 @@ function updateNavButtons() {
   $("nextBtn").style.display = onLast ? "none" : "inline-block";
 }
 
+function playPerfectFireworks() {
+  const canvas = document.getElementById("fxCanvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  // Match canvas to screen (hiDPI safe)
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  const w = Math.floor(window.innerWidth);
+  const h = Math.floor(window.innerHeight);
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Particles
+  const particles = [];
+  const bursts = 4;
+  const colors = ["#ff8a00", "#ffb15c", "#e8eef5", "#ffb000"];
+
+  function burst(x, y) {
+    const count = 80;
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = 2 + Math.random() * 5;
+      particles.push({
+        x, y,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        life: 70 + Math.random() * 40,
+        age: 0,
+        size: 2 + Math.random() * 2,
+        color: colors[(Math.random() * colors.length) | 0]
+      });
+    }
+  }
+
+  // Launch a few bursts
+  for (let b = 0; b < bursts; b++) {
+    setTimeout(() => {
+      burst(
+        w * (0.2 + Math.random() * 0.6),
+        h * (0.2 + Math.random() * 0.4)
+      );
+      // tiny haptic if available (optional)
+      try { navigator.vibrate && navigator.vibrate(20); } catch {}
+    }, b * 180);
+  }
+
+  let running = true;
+  let frame = 0;
+
+  function step() {
+    if (!running) return;
+    frame++;
+
+    // Fade previous frame slightly for trails
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.fillRect(0, 0, w, h);
+
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.age++;
+
+      // Gravity + drag
+      p.vx *= 0.985;
+      p.vy = p.vy * 0.985 + 0.08;
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      const t = 1 - p.age / p.life;
+      if (t <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.globalAlpha = Math.max(0, t);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+
+    // Stop after particles finish or timeout
+    if (particles.length === 0 || frame > 220) {
+      running = false;
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  // Clear once and start animation
+  ctx.clearRect(0, 0, w, h);
+  requestAnimationFrame(step);
+}
+
 // ============================================
 // SCORING + SUMMARY + SAVE ATTEMPT
 // ============================================
