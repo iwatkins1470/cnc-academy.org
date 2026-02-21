@@ -277,9 +277,6 @@ function playPerfectFireworks() {
   requestAnimationFrame(step);
 }
 
-    requestAnimationFrame(step);
-}
-
 // ============================================
 // SCORING + SUMMARY + SAVE ATTEMPT
 // ============================================
