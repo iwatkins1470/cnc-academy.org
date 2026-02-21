@@ -507,14 +507,25 @@ function showSummary() {
   }
 
   const name = ($("studentName").value || "").trim() || "—";
-  const attempt = {
-    ts: Date.now(),
-    student: name,
-    score,
-    total,
-    rating: r.label,
-    ratingClass: r.cls
-  };
+  // Build missed question details for admin page
+const missedIndexes = computeMissedIndexes(); // 0-based
+const missedNumsForAdmin = missedIndexes.map(i => i + 1);
+const missedIdsForAdmin = missedIndexes.map(i => QUIZ.questions[i].id);
+const missedTextsForAdmin = missedIndexes.map(i => QUIZ.questions[i].text);
+
+const attempt = {
+  ts: Date.now(),
+  student: name,
+  score,
+  total,
+  rating: r.label,
+  ratingClass: r.cls,
+
+  // ✅ NEW: store missed questions so admin can see them
+  missedNums: missedNumsForAdmin,     // [2, 5, 7]
+  missedIds: missedIdsForAdmin,       // ["q2","q5","q7"]
+  missedTexts: missedTextsForAdmin    // ["Static accuracy primarily evaluates:", ...]
+};
 
   const attempts = getAttempts();
   attempts.unshift(attempt);
