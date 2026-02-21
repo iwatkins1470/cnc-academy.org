@@ -22,8 +22,16 @@ const QUIZ = {
 // ============================================
 const STORAGE_KEY = "cnc_academy_attempts_v1";
 let currentIndex = 0;
+
 // answers[qid] = chosenIndex (number) or null
 const answers = Object.fromEntries(QUIZ.questions.map(q => [q.id, null]));
+
+// Review mode state
+let inReviewMode = false;
+// list of question indexes (0-based) that are still missed
+let reviewQueue = [];
+// pointer into reviewQueue
+let reviewPos = 0;
 
 // ============================================
 // HELPERS
@@ -31,7 +39,6 @@ const answers = Object.fromEntries(QUIZ.questions.map(q => [q.id, null]));
 function $(id) { return document.getElementById(id); }
 
 function formatTime(ts) {
-  // simple local time string
   try { return new Date(ts).toLocaleString(); } catch { return String(ts); }
 }
 
@@ -68,7 +75,28 @@ function ratingFor(score, total) {
 }
 
 function updateProgressPill() {
-  $("progressPill").textContent = `Question ${currentIndex + 1}/${QUIZ.questions.length}`;
+  if (inReviewMode) {
+    const remaining = reviewQueue.length;
+    const pos = Math.min(reviewPos + 1, Math.max(remaining, 1));
+    $("progressPill").textContent = `Review: ${pos}/${Math.max(remaining, 1)} remaining`;
+  } else {
+    $("progressPill").textContent = `Question ${currentIndex + 1}/${QUIZ.questions.length}`;
+  }
+}
+
+function isCorrect(index) {
+  const q = QUIZ.questions[index];
+  const picked = answers[q.id];
+  return picked !== null && picked === q.correctIndex;
+}
+
+function computeMissedIndexes() {
+  const missed = [];
+  QUIZ.questions.forEach((q, idx) => {
+    const picked = answers[q.id];
+    if (picked === null || picked !== q.correctIndex) missed.push(idx);
+  });
+  return missed;
 }
 
 // ============================================
@@ -100,9 +128,38 @@ function renderCurrentQuestion() {
 
     input.addEventListener("change", () => {
       answers[q.id] = idx;
+
+      // If we're in review mode, remove this question from queue once correct
+      if (inReviewMode) {
+        // If this question is now correct, remove it from the reviewQueue
+        if (isCorrect(currentIndex)) {
+          const beforeLen = reviewQueue.length;
+          reviewQueue = reviewQueue.filter(i => i !== currentIndex);
+
+          // If we removed something earlier than our current position, adjust pointer
+          if (reviewPos >= reviewQueue.length) reviewPos = Math.max(reviewQueue.length - 1, 0);
+
+          // If review is done, exit
+          if (reviewQueue.length === 0) {
+            finishReviewMode();
+            return;
+          }
+
+          // If queue shrank but still has items, keep reviewPos where it is
+          // and jump to the next remaining item (same position)
+          const nextIndex = reviewQueue[Math.min(reviewPos, reviewQueue.length - 1)];
+          currentIndex = nextIndex;
+        } else {
+          // Still wrong; keep currentIndex as-is.
+        }
+      } else {
+        // normal mode: clear summary on answer change
+        $("result").innerHTML = "";
+      }
+
       updateNavButtons();
-      // Clear result when changing answers (keeps it feeling “live”)
-      $("result").innerHTML = "";
+      updateProgressPill();
+      renderCurrentQuestion();
     });
 
     label.appendChild(input);
@@ -117,10 +174,27 @@ function renderCurrentQuestion() {
 }
 
 function updateNavButtons() {
+  if (inReviewMode) {
+    // Review mode navigation: Back/Next walk reviewQueue only
+    $("backBtn").disabled = reviewQueue.length <= 1 || reviewPos === 0;
+    $("nextBtn").disabled = reviewQueue.length <= 1 || reviewPos >= reviewQueue.length - 1;
+
+    // Hide Submit during review (they already submitted)
+    $("submitBtn").style.display = "none";
+
+    // Show Next always (even if last, it will be disabled)
+    $("nextBtn").style.display = "inline-block";
+    $("backBtn").style.display = "inline-block";
+    return;
+  }
+
+  // Normal mode navigation
+  $("backBtn").style.display = "inline-block";
+  $("nextBtn").style.display = "inline-block";
+
   $("backBtn").disabled = currentIndex === 0;
   $("nextBtn").disabled = currentIndex === QUIZ.questions.length - 1;
 
-  // only show Submit on last question
   const onLast = currentIndex === QUIZ.questions.length - 1;
   $("submitBtn").style.display = onLast ? "inline-block" : "none";
   $("nextBtn").style.display = onLast ? "none" : "inline-block";
@@ -131,25 +205,52 @@ function updateNavButtons() {
 // ============================================
 function scoreQuiz() {
   let score = 0;
-  const missed = [];
-  const unanswered = [];
+  const missedNums = [];
+  const unansweredNums = [];
 
   QUIZ.questions.forEach((q, i) => {
     const picked = answers[q.id];
     if (picked === null) {
-      unanswered.push(i + 1);
-      missed.push(i + 1);
+      unansweredNums.push(i + 1);
+      missedNums.push(i + 1);
       return;
     }
     if (picked === q.correctIndex) score++;
-    else missed.push(i + 1);
+    else missedNums.push(i + 1);
   });
 
-  return { score, total: QUIZ.questions.length, missed, unanswered };
+  return { score, total: QUIZ.questions.length, missedNums, unansweredNums };
+}
+
+function enterReviewMode() {
+  reviewQueue = computeMissedIndexes();
+  if (reviewQueue.length === 0) return;
+
+  inReviewMode = true;
+  reviewPos = 0;
+  currentIndex = reviewQueue[0];
+
+  $("result").innerHTML = `<div class="sub">Review mode: fix the missed questions. As you correct one, it drops off the list.</div>`;
+
+  renderCurrentQuestion();
+}
+
+function finishReviewMode() {
+  inReviewMode = false;
+  reviewQueue = [];
+  reviewPos = 0;
+
+  $("result").innerHTML =
+    `<div class="big">Review complete ✅</div>
+     <div class="sub">Nice. You corrected all missed questions. You can reset and retake anytime.</div>`;
+
+  // Return to normal flow at question 1
+  currentIndex = 0;
+  renderCurrentQuestion();
 }
 
 function showSummary() {
-  const { score, total, missed, unanswered } = scoreQuiz();
+  const { score, total, missedNums, unansweredNums } = scoreQuiz();
   const r = ratingFor(score, total);
 
   const parts = [];
@@ -157,13 +258,21 @@ function showSummary() {
   parts.push(`<div class="rating ${r.cls}">${r.label}</div>`);
   parts.push(`<div class="sub">${r.detail}</div>`);
 
-  if (unanswered.length) {
-    parts.push(`<div class="sub">Unanswered: ${unanswered.join(", ")}</div>`);
-  } else if (missed.length) {
-    parts.push(`<div class="sub">Missed: ${missed.join(", ")}</div>`);
+  if (unansweredNums.length) {
+    parts.push(`<div class="sub">Unanswered: ${unansweredNums.join(", ")}</div>`);
+  } else if (missedNums.length) {
+    parts.push(`<div class="sub">Missed: ${missedNums.join(", ")}</div>`);
+  }
+
+  if (missedNums.length > 0) {
+    parts.push(`<button type="button" id="reviewBtn" class="reviewBtn">Review Missed Questions</button>`);
   }
 
   $("result").innerHTML = parts.join("");
+
+  if (missedNums.length > 0) {
+    $("reviewBtn").addEventListener("click", enterReviewMode);
+  }
 
   // Save attempt to dashboard
   const name = ($("studentName").value || "").trim() || "—";
@@ -178,7 +287,6 @@ function showSummary() {
 
   const attempts = getAttempts();
   attempts.unshift(attempt);
-  // keep last 50
   setAttempts(attempts.slice(0, 50));
   renderDashboard();
 }
@@ -226,7 +334,6 @@ function copyResultsToClipboard() {
     return;
   }
 
-  // CSV-ish text
   const lines = ["Time,Student,Score,Rating"];
   attempts.forEach(a => {
     const time = formatTime(a.ts).replaceAll(",", " ");
@@ -265,6 +372,15 @@ function fallbackCopy(text) {
 // NAV ACTIONS
 // ============================================
 function nextQuestion() {
+  if (inReviewMode) {
+    if (reviewPos < reviewQueue.length - 1) {
+      reviewPos++;
+      currentIndex = reviewQueue[reviewPos];
+      renderCurrentQuestion();
+    }
+    return;
+  }
+
   if (currentIndex < QUIZ.questions.length - 1) {
     currentIndex++;
     renderCurrentQuestion();
@@ -272,6 +388,15 @@ function nextQuestion() {
 }
 
 function prevQuestion() {
+  if (inReviewMode) {
+    if (reviewPos > 0) {
+      reviewPos--;
+      currentIndex = reviewQueue[reviewPos];
+      renderCurrentQuestion();
+    }
+    return;
+  }
+
   if (currentIndex > 0) {
     currentIndex--;
     renderCurrentQuestion();
@@ -281,6 +406,11 @@ function prevQuestion() {
 function resetAll() {
   QUIZ.questions.forEach(q => answers[q.id] = null);
   currentIndex = 0;
+
+  inReviewMode = false;
+  reviewQueue = [];
+  reviewPos = 0;
+
   $("result").innerHTML = "";
   renderCurrentQuestion();
 }
@@ -307,14 +437,3 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCurrentQuestion();
   renderDashboard();
 });
-function reviewMissed(missedList) {
-  if (!missedList || !missedList.length) return;
-
-  // Jump to first missed question
-  currentIndex = missedList[0] - 1;
-
-  // Clear summary
-  $("result").innerHTML = "";
-
-  renderCurrentQuestion();
-}
